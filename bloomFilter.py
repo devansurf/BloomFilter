@@ -1,7 +1,7 @@
 #Devan A Vazquez    802-18-4051
 #devan.vazquez@upr.edu
 
-import sys, math, random as rand
+import sys, csv, math, random as rand
 
 #created salts when bloomFilter was created
 hashSalts = []
@@ -48,25 +48,33 @@ def createBloomFilter(inputFile):
     return bloomFilter
 
 def checkBloomFilter(bloomFilter, checkFile):
+    
     emailList = []
     for i, line in enumerate(checkFile):
         #skip the header 'email'
         if i == 0: continue
         emailList.append(line)
+    with open('results.csv', 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        header = ['email', 'result']
+        # write the header
+        writer.writerow(header)
 
-    for i in range(len(emailList)):
-        #Is True until proven otherwise
-        probablyInDB = True
-        #check every hash function 
-        for j in range(len(hashSalts)):
-             # the salt will help convert the hash into a different hash given the same value, working as a different hash function
-            hashVal = hashFunc(emailList[i], hashSalts[j]) % len(bloomFilter)
-            #check if bit is false, if it is, we know for a fact that that value is not in the DB
-            if bloomFilter[hashVal] == False:
-                probablyInDB = False
-                break
-        print(probablyInDB)
-        print(emailList[i])
+        for i in range(len(emailList)):
+            #Is True until proven otherwise
+            text = "Probably in the DB"
+            #check every hash function 
+            for j in range(len(hashSalts)):
+                # the salt will help convert the hash into a different hash given the same value, working as a different hash function
+                hashVal = hashFunc(emailList[i], hashSalts[j]) % len(bloomFilter)
+                #check if bit is false, if it is, we know for a fact that that value is not in the DB
+                if bloomFilter[hashVal] == False:
+                    text = "Not in the DB"
+                    break     
+            data = [emailList[i], text]
+            writer.writerow(data)
+            
+        
 
 def main():
     #collect file directory as argument
